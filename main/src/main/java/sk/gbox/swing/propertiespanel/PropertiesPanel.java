@@ -788,6 +788,17 @@ public class PropertiesPanel extends JPanel {
     }
 
     /**
+     * Sets color of lines that visualize the tree of properties
+     * 
+     * @param lineColor
+     *            the desired color of lines.
+     */
+    public void setLineColorOfTree(Color lineColor) {
+	treeLineColor = lineColor;
+	repaint();
+    }
+
+    /**
      * Returns indentation level shift for simple simple subproperties.
      */
     public int getIndentationLevelShift() {
@@ -853,6 +864,9 @@ public class PropertiesPanel extends JPanel {
 	} else {
 	    remove(hintBox);
 	}
+
+	revalidate();
+	repaint();
     }
 
     /**
@@ -881,6 +895,9 @@ public class PropertiesPanel extends JPanel {
 	} else {
 	    hintBox.remove(hintTitleLabel);
 	}
+
+	revalidate();
+	repaint();
     }
 
     /**
