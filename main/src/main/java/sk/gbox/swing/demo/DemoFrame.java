@@ -1,40 +1,27 @@
 package sk.gbox.swing.demo;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.EventQueue;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.charset.Charset;
 
-import javax.swing.JColorChooser;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 import sk.gbox.swing.propertiespanel.*;
 import sk.gbox.swing.propertiespanel.types.*;
-
-import javax.swing.JSplitPane;
-
-import java.awt.FlowLayout;
-
-import javax.swing.JCheckBox;
-
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
-import javax.swing.JButton;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.JLabel;
 
 @SuppressWarnings("serial")
 public class DemoFrame extends JFrame {
@@ -47,9 +34,9 @@ public class DemoFrame extends JFrame {
     private PropertiesPanel propertiesPanel;
 
     /**
-     * Container (model) for properties.
+     * Text area for xml configuration.
      */
-    private ComposedProperty propertyGroup;
+    private JTextArea xmlConfigurationArea;
 
     /**
      * Launch the application.
@@ -73,9 +60,104 @@ public class DemoFrame extends JFrame {
      */
     public DemoFrame() {
 	initializeComponents();
-	propertyGroup = new ComposedProperty();
-	initializeModel();
-	propertiesPanel.setModel(propertyGroup);
+	propertiesPanel.setModel(createDemoModel());
+
+	// Load example xml configuration
+	try (InputStream is = DemoFrame.class.getResourceAsStream("properties.xml")) {
+	    Reader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("utf-8")));
+	    StringBuilder sb = new StringBuilder();
+	    int c;
+	    while ((c = reader.read()) != -1) {
+		sb.append((char) c);
+	    }
+
+	    xmlConfigurationArea.setText(sb.toString());
+	} catch (Exception ignore) {
+
+	}
+    }
+
+    /**
+     * Initializes the model using a code.
+     */
+    private ComposedProperty createDemoModel() {
+	ComposedProperty container = new ComposedProperty();
+
+	ComposedProperty propertiesGroup = new ComposedProperty();
+	propertiesGroup.setName("properties");
+	propertiesGroup.setLabel("Properties");
+	propertiesGroup.setImportant(true);
+	propertiesGroup.setHint("Basic configuration properties.");
+
+	Property nameProperty = new SimpleProperty(new StringType(), "defaultName");
+	nameProperty.setName("name");
+	nameProperty.setLabel("name");
+	nameProperty.setHint("Name of component.");
+	propertiesGroup.getSubproperties().add(nameProperty);
+
+	Property activeProperty = new SimpleProperty(new StringType(), "");
+	activeProperty.setName("enabled");
+	activeProperty.setLabel("enabled");
+	activeProperty.setHint("Indicates whether the component is enabled.");
+	propertiesGroup.getSubproperties().add(activeProperty);
+
+	ComposedProperty advancedGroup = new ComposedProperty();
+	advancedGroup.setName("advanced");
+	advancedGroup.setLabel("Advanced properties");
+	advancedGroup.setImportant(true);
+	advancedGroup.setHint("Advanced configuration properties.");
+
+	Property hintProperty = new SimpleProperty(new StringType(), "");
+	hintProperty.setName("hint");
+	hintProperty.setLabel("hint");
+	hintProperty.setHint("Hint associated with the component.");
+	advancedGroup.getSubproperties().add(hintProperty);
+
+	container.getSubproperties().add(propertiesGroup);
+	container.getSubproperties().add(advancedGroup);
+	return container;
+    }
+
+    /**
+     * Creates and sets model from xml.
+     */
+    private void setModelFromXml() {
+	// Parse xml configuration
+	DocumentBuilder domParser = null;
+	try {
+	    domParser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+	} catch (Exception e) {
+	    JOptionPane.showMessageDialog(this, "Could not create xml parser.", "Error",
+		    JOptionPane.ERROR_MESSAGE);
+
+	    return;
+	}
+
+	Document doc = null;
+	try {
+	    doc = domParser
+		    .parse(new InputSource(new StringReader(xmlConfigurationArea.getText())));
+	} catch (Exception e) {
+	    JOptionPane.showMessageDialog(this, "Could not parse xml configuration.", "Error",
+		    JOptionPane.ERROR_MESSAGE);
+
+	    return;
+	}
+
+	XmlPropertyBuilder builder = new XmlPropertyBuilder();
+	try {
+	    Property property = builder.createProperties(doc);
+	    if (property instanceof ComposedProperty) {
+		propertiesPanel.setModel((ComposedProperty) property);
+	    } else {
+		JOptionPane.showMessageDialog(this,
+			"Xml configuration configures a simple property.", "Error",
+			JOptionPane.ERROR_MESSAGE);
+	    }
+	} catch (XmlPropertyBuilder.InvalidConfigurationException e) {
+	    JOptionPane.showMessageDialog(this, "Invalid content of xml configuration.\n" + e.getLocalizedMessage(), "Error",
+		    JOptionPane.ERROR_MESSAGE);
+	}
     }
 
     /**
@@ -151,72 +233,113 @@ public class DemoFrame extends JFrame {
 	    }
 	});
 	indentationSpinner.setModel(new SpinnerNumberModel(0, -1, 1, 1));
-	
+
 	JLabel lblNewLabel = new JLabel("Indentation offset:");
 
+	JScrollPane scrollPane = new JScrollPane();
+
+	JButton btnNewButton = new JButton("Create from xml");
+	btnNewButton.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		setModelFromXml();
+	    }
+	});
+
 	GroupLayout gl_configPanel = new GroupLayout(configPanel);
-	gl_configPanel.setHorizontalGroup(
-		gl_configPanel.createParallelGroup(Alignment.LEADING)
-			.addGroup(gl_configPanel.createSequentialGroup()
+	gl_configPanel
+		.setHorizontalGroup(gl_configPanel
+			.createParallelGroup(Alignment.LEADING)
+			.addGroup(
+				gl_configPanel
+					.createSequentialGroup()
+					.addGroup(
+						gl_configPanel
+							.createParallelGroup(Alignment.LEADING)
+							.addGroup(
+								gl_configPanel
+									.createSequentialGroup()
+									.addContainerGap()
+									.addGroup(
+										gl_configPanel
+											.createParallelGroup(
+												Alignment.LEADING)
+											.addGroup(
+												gl_configPanel
+													.createSequentialGroup()
+													.addComponent(
+														showHintBoxChB)
+													.addPreferredGap(
+														ComponentPlacement.UNRELATED)
+													.addComponent(
+														showHintTitleChB))
+											.addGroup(
+												gl_configPanel
+													.createSequentialGroup()
+													.addComponent(
+														btnGridColor)
+													.addPreferredGap(
+														ComponentPlacement.RELATED)
+													.addComponent(
+														btnTreeColor))
+											.addGroup(
+												gl_configPanel
+													.createSequentialGroup()
+													.addComponent(
+														lblNewLabel)
+													.addPreferredGap(
+														ComponentPlacement.RELATED)
+													.addComponent(
+														indentationSpinner,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE))))
+							.addGroup(
+								gl_configPanel
+									.createSequentialGroup()
+									.addContainerGap()
+									.addComponent(btnNewButton))
+							.addGroup(
+								gl_configPanel
+									.createSequentialGroup()
+									.addGap(12)
+									.addComponent(
+										scrollPane,
+										GroupLayout.DEFAULT_SIZE,
+										437,
+										Short.MAX_VALUE)))
+					.addContainerGap()));
+	gl_configPanel.setVerticalGroup(gl_configPanel.createParallelGroup(Alignment.LEADING)
+		.addGroup(
+			gl_configPanel
+				.createSequentialGroup()
 				.addContainerGap()
-				.addGroup(gl_configPanel.createParallelGroup(Alignment.LEADING)
-					.addGroup(gl_configPanel.createSequentialGroup()
+				.addGroup(
+					gl_configPanel.createParallelGroup(Alignment.BASELINE)
 						.addComponent(showHintBoxChB)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
 						.addComponent(showHintTitleChB))
-					.addGroup(gl_configPanel.createSequentialGroup()
-						.addComponent(btnGridColor)
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(btnTreeColor))
-					.addGroup(gl_configPanel.createSequentialGroup()
-						.addComponent(lblNewLabel)
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(indentationSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-				.addContainerGap(242, Short.MAX_VALUE))
-	);
-	gl_configPanel.setVerticalGroup(
-		gl_configPanel.createParallelGroup(Alignment.LEADING)
-			.addGroup(gl_configPanel.createSequentialGroup()
-				.addContainerGap()
-				.addGroup(gl_configPanel.createParallelGroup(Alignment.BASELINE)
-					.addComponent(showHintBoxChB)
-					.addComponent(showHintTitleChB))
 				.addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(gl_configPanel.createParallelGroup(Alignment.BASELINE)
-					.addComponent(btnGridColor)
-					.addComponent(btnTreeColor))
+				.addGroup(
+					gl_configPanel.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnGridColor)
+						.addComponent(btnTreeColor))
 				.addPreferredGap(ComponentPlacement.UNRELATED)
-				.addGroup(gl_configPanel.createParallelGroup(Alignment.BASELINE)
-					.addComponent(lblNewLabel)
-					.addComponent(indentationSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-				.addContainerGap(340, Short.MAX_VALUE))
-	);
+				.addGroup(
+					gl_configPanel
+						.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblNewLabel)
+						.addComponent(indentationSpinner,
+							GroupLayout.PREFERRED_SIZE,
+							GroupLayout.DEFAULT_SIZE,
+							GroupLayout.PREFERRED_SIZE))
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(btnNewButton)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 294,
+					Short.MAX_VALUE).addContainerGap()));
+
+	xmlConfigurationArea = new JTextArea();
+	scrollPane.setViewportView(xmlConfigurationArea);
 	configPanel.setLayout(gl_configPanel);
     }
 
-    private void initializeModel() {
-	ComposedProperty pg1 = new ComposedProperty();
-	pg1.setLabel("Visual configuration");
-	PropertyType pt = new StringType();
-	Property p1 = new SimpleProperty(pt, null);
-	p1.setLabel("MinimalWidth");
-	p1.setValue("test");
-	pg1.getSubproperties().add(p1);
-	Property p2 = new SimpleProperty(pt, null);
-	pg1.getSubproperties().add(p2);
-	p2.setLabel("Timeout");
-	p2.setValue("Moj cas");
-
-	ComposedProperty pg2 = new ComposedProperty(pt);
-	pg2.setLabel("Data");
-	pg2.setImportant(true);
-
-	Property p3 = new SimpleProperty(pt, null);
-	p3.setLabel("Name");
-	p3.setValue("Moje meno");
-	pg2.getSubproperties().add(p3);
-
-	propertyGroup.getSubproperties().add(pg1);
-	propertyGroup.getSubproperties().add(pg2);
-    }
 }

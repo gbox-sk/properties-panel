@@ -275,7 +275,13 @@ public class PropertiesPanel extends JPanel {
 		    }
 
 		    hintTitleLabel.setText(hintTitle);
-		    hintLabel.setText(property.getHint());
+		    
+		    String hint = property.getHint();
+		    if (hint != null) {
+			hintLabel.setText("<html>" + property.getHint() + "</html>");
+		    } else {
+			hintLabel.setText("");
+		    }
 		}
 	    });
 	}
@@ -698,11 +704,9 @@ public class PropertiesPanel extends JPanel {
 	BufferedImage defaultCollapseIcon = null;
 	BufferedImage defaultExpandIcon = null;
 	try {
-	    String packageName = this.getClass().getPackage().getName().replace('.', '/');
-	    defaultCollapseIcon = ImageIO.read(ClassLoader.getSystemResource(packageName
-		    + "/collapse-icon.png"));
-	    defaultExpandIcon = ImageIO.read(ClassLoader.getSystemResource(packageName
-		    + "/expand-icon.png"));
+	    defaultCollapseIcon = ImageIO.read(PropertiesPanel.class
+		    .getResource("collapse-icon.png"));
+	    defaultExpandIcon = ImageIO.read(PropertiesPanel.class.getResource("expand-icon.png"));
 	} catch (Exception ignore) {
 
 	}

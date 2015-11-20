@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<properties>
+	<property name="properties">
+		<label>Properties</label>
+		<hint>Basic configuration properties.</hint>
+		<subproperties>
+			<property name="name" type="string">
+				<label>name</label>
+				<hint title="properties.name">Name of component.</hint>
+			</property>			
+		</subproperties>
+	</property>
+</properties>
