@@ -25,7 +25,11 @@ final public class SimpleProperty extends Property {
 	    throw new NullPointerException("Simple property must have a type.");
 	}
 
-	this.value = initialValue;
+	if (!type.checkValue(initialValue)) {
+	    throw new RuntimeException("Invalid value.");
+	}
+	
+	value = initialValue;
     }
 
     @Override

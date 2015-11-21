@@ -95,6 +95,14 @@ public class IntegerType extends SimplePropertyType {
      */
     private static class CellEditor extends DefaultCellEditor {
 
+	/**
+	 * Currently set formatter factory.
+	 */
+	private DefaultFormatterFactory formatterFactory;
+
+	/**
+	 * Constructs cell editor.
+	 */
 	public CellEditor() {
 	    super(new JFormattedTextField());
 	    final JFormattedTextField ftf = (JFormattedTextField) getComponent();
@@ -130,9 +138,11 @@ public class IntegerType extends SimplePropertyType {
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value,
 		boolean isSelected, int row, int column) {
-	    JFormattedTextField ftf = (JFormattedTextField) super.getTableCellEditorComponent(
-		    table, value, isSelected, row, column);
-	    return ftf;
+	    JFormattedTextField ftf = (JFormattedTextField) getComponent();
+	    ftf.setFormatterFactory(null);
+	    ftf.setValue(value);
+	    ftf.setFormatterFactory(formatterFactory);
+	    return super.getTableCellEditorComponent(table, value, isSelected, row, column);
 	}
 
 	@Override
@@ -266,8 +276,7 @@ public class IntegerType extends SimplePropertyType {
 
     @Override
     public TableCellEditor getValueEditor(PropertiesPanel propertiesPanel) {
-	JFormattedTextField ftf = (JFormattedTextField) editor.getComponent();
-	ftf.setFormatterFactory(formatterFactory);
+	editor.formatterFactory = formatterFactory;
 	return editor;
     }
 

@@ -131,6 +131,12 @@ final public class ComposedProperty extends Property {
      */
     public ComposedProperty(ComposedPropertyType type, Object initialValue) {
 	super(type);
+	
+	if (type != null) {
+	    if (!type.checkValue(initialValue)) {
+		throw new RuntimeException("Invalid value.");
+	    }
+	}
 	value = initialValue;
     }
 

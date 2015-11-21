@@ -12,6 +12,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
 import javax.xml.parsers.*;
+
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
@@ -92,17 +93,23 @@ public class DemoFrame extends JFrame {
 	nameProperty.setHint("Name of component.");
 	propertiesGroup.getSubproperties().add(nameProperty);
 
-	Property activeProperty = new SimpleProperty(new BooleanType(), "");
+	Property activeProperty = new SimpleProperty(new BooleanType(), true);
 	activeProperty.setName("enabled");
 	activeProperty.setLabel("enabled");
 	activeProperty.setHint("Indicates whether the component is enabled.");
 	propertiesGroup.getSubproperties().add(activeProperty);
 
-	Property counterProperty = new SimpleProperty(new IntegerType(0, 100, false), "");
+	Property counterProperty = new SimpleProperty(new IntegerType(0, 100, false), 0);
 	counterProperty.setName("counter");
 	counterProperty.setLabel("counter");
 	counterProperty.setHint("Counts something");
 	propertiesGroup.getSubproperties().add(counterProperty);
+
+	Property decimalProperty = new SimpleProperty(new DecimalType(0, 100, false), 0);
+	decimalProperty.setName("decimal");
+	decimalProperty.setLabel("decimal");
+	decimalProperty.setHint("Floating point number.");
+	propertiesGroup.getSubproperties().add(decimalProperty);
 
 	Property enumProperty = new SimpleProperty(new EnumerationType(Arrays.asList(null,
 		"Type A", "Type B", "Type C")), null);
