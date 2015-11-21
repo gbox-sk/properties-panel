@@ -112,7 +112,7 @@ public class IntegerType extends SimplePropertyType {
 	    ftf.getActionMap().put("check", new AbstractAction() {
 		public void actionPerformed(ActionEvent e) {
 		    if (!ftf.isEditValid()) {
-			if (userSaysRevert(ftf, null)) {
+			if (askEditOrRevert(ftf, null)) {
 			    ftf.setValue(ftf.getValue());
 			    ftf.postActionEvent();
 			}
@@ -151,7 +151,7 @@ public class IntegerType extends SimplePropertyType {
 		    // nothing to do
 		}
 	    } else {
-		if (!userSaysRevert(ftf, null)) {
+		if (!askEditOrRevert(ftf, null)) {
 		    return false;
 		} else {
 		    ftf.setValue(ftf.getValue());

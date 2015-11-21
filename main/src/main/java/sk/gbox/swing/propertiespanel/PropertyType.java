@@ -59,6 +59,37 @@ public abstract class PropertyType {
 	return null;
     }
 
+    // ------------------------------------------------------------------
+    // Shared static constants for GUI communication.
+    // ------------------------------------------------------------------
+
+    private static String editLabel = "Edit";
+    private static String revertLabel = "Revert";
+    private static String editOrRevertTitle = "Invalid value entered";
+    private static String editOrRevertMessage = "The value is invalid.\n"
+	    + "You can either continue editing or revert to the last valid value.";
+
+    /**
+     * Configure texts displayed in a window displayed when the user entered an
+     * invalid value.
+     * 
+     * @param edit
+     *            the text of edit button.
+     * @param revert
+     *            the text of revert button.
+     * @param windowTitle
+     *            the title of window.
+     * @param message
+     *            the message displayed in the window.
+     */
+    public static void configureEditOrRevertTexts(String edit, String revert, String windowTitle,
+	    String message) {
+	editLabel = edit;
+	revertLabel = revert;
+	editOrRevertTitle = windowTitle;
+	editOrRevertMessage = message;
+    }
+
     /**
      * Asks the user whether to continue edit or revert the invalid value.
      * 
@@ -68,13 +99,12 @@ public abstract class PropertyType {
      *            the additional information why the value is not valid.
      * @return true, if the user prefers to revert the value.
      */
-    protected static boolean userSaysRevert(Component editedComponent, String message) {
-	String windowMessage = "The value is invalid.\n" + "You can either continue editing "
-		+ "or revert to the last valid value.";
-	Object[] options = { "Edit", "Revert" };
+    protected static boolean askEditOrRevert(Component editedComponent, String message) {
+	String windowMessage = String.format(editOrRevertMessage, (message == null) ? "" : message);
+	Object[] options = { editLabel, revertLabel };
 	int answer = JOptionPane.showOptionDialog(
 		(editedComponent != null) ? SwingUtilities.getWindowAncestor(editedComponent)
-			: null, windowMessage, "Invalid value entered", JOptionPane.YES_NO_OPTION,
+			: null, windowMessage, editOrRevertTitle, JOptionPane.YES_NO_OPTION,
 		JOptionPane.ERROR_MESSAGE, null, options, options[1]);
 
 	if (answer == 1) {
