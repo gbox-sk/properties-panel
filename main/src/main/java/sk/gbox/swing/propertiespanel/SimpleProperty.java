@@ -19,7 +19,7 @@ final public class SimpleProperty extends Property {
      * @param initialValue
      *            the initial value of the property.
      */
-    public SimpleProperty(PropertyType type, Object initialValue) {
+    public SimpleProperty(SimplePropertyType type, Object initialValue) {
 	super(type);
 	if (type == null) {
 	    throw new NullPointerException("Simple property must have a type.");
@@ -41,6 +41,10 @@ final public class SimpleProperty extends Property {
 
 	if ((value != null) && (value.equals(this.value))) {
 	    return;
+	}
+
+	if (!getType().checkValue(value)) {
+	    throw new RuntimeException("Invalid value.");
 	}
 
 	this.value = value;

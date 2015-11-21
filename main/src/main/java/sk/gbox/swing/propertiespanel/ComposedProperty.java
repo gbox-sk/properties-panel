@@ -2,7 +2,9 @@ package sk.gbox.swing.propertiespanel;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 /**
  * Composed property that is formed by sub-properties.
@@ -115,20 +117,35 @@ final public class ComposedProperty extends Property {
     private final PropertyList subproperties = new PropertyList();
 
     /**
+     * Property value of composed properties.
+     */
+    private Object value;
+
+    /**
      * Constructs the composed property.
      * 
      * @param type
-     *            the type of property
+     *            the type of property.
+     * @param initialValue
+     *            the initial value of property
      */
-    public ComposedProperty(PropertyType type) {
+    public ComposedProperty(ComposedPropertyType type, Object initialValue) {
 	super(type);
+	value = initialValue;
+    }
+
+    /**
+     * Constructs untyped composed property.
+     */
+    public ComposedProperty(ComposedPropertyType type) {
+	this(type, (type != null) ? type.getDefaultValue() : null);
     }
 
     /**
      * Constructs untyped composed property.
      */
     public ComposedProperty() {
-	this(null);
+	this(null, null);
     }
 
     /**
@@ -140,13 +157,91 @@ final public class ComposedProperty extends Property {
 
     @Override
     public Object getValue() {
-	// TODO Auto-generated method stub
-	return null;
+	if (getType() == null) {
+	    Map<String, Object> result = new HashMap<String, Object>();
+	    retrieveValuesFromSubproperties(result);
+	    return result;
+	} else {
+	    return value;
+	}
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public void setValue(Object value) {
-	// TODO Auto-generated method stub
+	if (getType() == null) {
+	    if ((value == null) || !(value instanceof Map)) {
+		throw new RuntimeException("Invalid value.");
+	    }
+	    pushValuesToSubproperties((Map) value);
+	} else {
+	    if (this.value == value) {
+		return;
+	    }
+
+	    if ((value != null) && (value.equals(this.value))) {
+		return;
+	    }
+
+	    if (!getType().checkValue(value)) {
+		throw new RuntimeException("Invalid value.");
+	    }
+
+	    this.value = value;
+	    pushValuesToSubproperties(((ComposedPropertyType) getType())
+		    .splitToSubvalues(this.value));
+	    firePropertyValueChanged(this);
+	}
+    }
+
+    /**
+     * Pushes values to subproperties.
+     * 
+     * @param values
+     *            the values of subproperties
+     */
+    private void pushValuesToSubproperties(@SuppressWarnings("rawtypes") Map values) {
+	for (Property property : subproperties) {
+	    if (property instanceof SimpleProperty) {
+		if (values.containsKey(property.getName())) {
+		    property.setValue(values);
+		}
+	    } else if (property instanceof ComposedProperty) {
+		ComposedProperty cProperty = (ComposedProperty) property;
+		if (cProperty.getType() == null) {
+		    cProperty.pushValuesToSubproperties(values);
+		} else {
+		    if (values.containsKey(cProperty.getName())) {
+			cProperty.setValue(values);
+		    }
+		}
+	    }
+	}
+    }
+
+    /**
+     * Retrieves values from subproperties.
+     * 
+     * @param output
+     *            the map for storing values.
+     */
+    private void retrieveValuesFromSubproperties(Map<String, Object> output) {
+	for (Property property : subproperties) {
+	    if (property instanceof SimpleProperty) {
+		if (property.getName() != null) {
+		    output.put(property.getName(), property.getValue());
+		}
+	    } else if (property instanceof ComposedProperty) {
+		ComposedProperty cProperty = (ComposedProperty) property;
+		if (cProperty.getType() == null) {
+		    cProperty.retrieveValuesFromSubproperties(output);
+		} else {
+		    if (cProperty.getName() != null) {
+			output.put(cProperty.getName(), cProperty.getValue());
+		    }
+		}
+	    }
+	}
     }
 
     /**

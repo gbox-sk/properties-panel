@@ -11,12 +11,12 @@ import sk.gbox.swing.propertiespanel.*;
 /**
  * Property type for string values.
  */
-public class StringType extends PropertyType {
+@SuppressWarnings("serial")
+public class StringType extends SimplePropertyType {
 
     /**
      * Cell editor for strings.
      */
-    @SuppressWarnings("serial")
     private static class CellEditor extends DefaultCellEditor {
 	private CellEditor() {
 	    super(new JTextField());
@@ -33,11 +33,10 @@ public class StringType extends PropertyType {
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value,
 		boolean isSelected, int row, int column) {
-	    return super.getTableCellEditorComponent(table, value, false, row, column);
+	    return super.getTableCellEditorComponent(table, value, isSelected, row, column);
 	}
     }
 
-    @SuppressWarnings("serial")
     private static class CellRenderer extends DefaultTableCellRenderer {
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value,
@@ -71,5 +70,10 @@ public class StringType extends PropertyType {
     @Override
     public boolean isReadOnly() {
 	return false;
+    }
+
+    @Override
+    public boolean checkValue(Object value) {
+	return (value == null) || (value instanceof String);
     }
 }

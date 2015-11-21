@@ -1,13 +1,38 @@
 <?xml version="1.0"?>
-<properties>
+<properties label="Demo properties"
+	hint="Properties created according to xml configuration.">
 	<property name="properties">
 		<label>Properties</label>
 		<hint>Basic configuration properties.</hint>
 		<subproperties>
-			<property name="name" type="string">
+			<property name="name" type="String">
 				<label>name</label>
 				<hint title="properties.name">Name of component.</hint>
-			</property>			
+			</property>
+			<property name="enabled" type="Boolean">
+				<label>enabled</label>
+				<hint title="properties.enabled">Indicates whether something is enabled.</hint>
+			</property>
+			<property name="count">
+				<label>count</label>
+				<hint>Count of something</hint>
+				<type name="Integer">
+					<parameter name="minValue" value="0" />
+					<parameter name="maxValue" value="10" />
+					<parameter name="nullable" value="false" />
+				</type>
+			</property>
+			<property name="type">
+				<label>type</label>
+				<hint>Type of something</hint>
+				<type name="Enumeration">
+					<map name="items">
+						<item key="TypeA">Type A</item>
+						<item key="TypeB">Type B</item>
+						<item key="TypeC">Type C</item>
+					</map>
+				</type>
+			</property>
 		</subproperties>
 	</property>
 </properties>

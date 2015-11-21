@@ -1,5 +1,9 @@
 package sk.gbox.swing.propertiespanel;
 
+import java.awt.Component;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.table.*;
 
 /**
@@ -37,11 +41,46 @@ public abstract class PropertyType {
     public abstract boolean isReadOnly();
 
     /**
+     * Returns whether given value is value value for the property type.
+     * 
+     * @param value
+     *            the value to be checked.
+     * @return true, if the value is valid for the property type, false
+     *         otherwise.
+     */
+    public abstract boolean checkValue(Object value);
+
+    /**
      * Returns default value for property type.
      * 
      * @return the default value for properties of this type.
      */
     public Object getDefaultValue() {
 	return null;
+    }
+
+    /**
+     * Asks the user whether to continue edit or revert the invalid value.
+     * 
+     * @param editedComponent
+     *            the component where the value is entered.
+     * @param message
+     *            the additional information why the value is not valid.
+     * @return true, if the user prefers to revert the value.
+     */
+    protected static boolean userSaysRevert(Component editedComponent, String message) {
+	String windowMessage = "The value is invalid.\n" + "You can either continue editing "
+		+ "or revert to the last valid value.";
+	Object[] options = { "Edit", "Revert" };
+	int answer = JOptionPane.showOptionDialog(
+		(editedComponent != null) ? SwingUtilities.getWindowAncestor(editedComponent)
+			: null, windowMessage, "Invalid value entered", JOptionPane.YES_NO_OPTION,
+		JOptionPane.ERROR_MESSAGE, null, options, options[1]);
+
+	if (answer == 1) {
+	    return true;
+	}
+
+	return false;
     }
 }

@@ -2,6 +2,8 @@ package sk.gbox.swing.propertiespanel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
@@ -81,6 +83,24 @@ public class PropertiesPanel extends JPanel {
 	 */
 	private Color separatorColor;
 
+	/**
+	 * Default cell background.
+	 */
+	private final Color defaultBackground;
+
+	/**
+	 * Default cell foreground.
+	 */
+	private final Color defaultForeground;
+
+	/**
+	 * Constructs the renderer.
+	 */
+	public PropertyNameCellRenderer() {
+	    defaultBackground = getBackground();
+	    defaultForeground = getForeground();
+	}
+
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value,
 		boolean isSelected, boolean hasFocus, int row, int column) {
@@ -96,6 +116,20 @@ public class PropertiesPanel extends JPanel {
 
 	    hasValuePart = (propertyRow.property.getType() != null);
 	    separatorColor = table.getGridColor();
+
+	    setBackground(defaultBackground);
+	    setForeground(defaultForeground);
+
+	    if ((!isSelected) && (!hasValuePart)
+		    && (propertyRow.property instanceof ComposedProperty)) {
+		if (groupNameBackground != null) {
+		    setBackground(groupNameBackground);
+		}
+
+		if (groupNameForeground != null) {
+		    setForeground(groupNameForeground);
+		}
+	    }
 
 	    String propertyName = propertyRow.property.getLabel();
 	    super.getTableCellRendererComponent(table, propertyName, isSelected, false, row, column);
@@ -263,25 +297,7 @@ public class PropertiesPanel extends JPanel {
 			return;
 		    }
 
-		    int selectedRow = getSelectedRow();
-		    if (selectedRow < 0) {
-			return;
-		    }
-
-		    Property property = getPropertyRow(selectedRow).property;
-		    String hintTitle = property.getHintTitle();
-		    if (hintTitle == null) {
-			hintTitle = property.getLabel();
-		    }
-
-		    hintTitleLabel.setText(hintTitle);
-		    
-		    String hint = property.getHint();
-		    if (hint != null) {
-			hintLabel.setText("<html>" + property.getHint() + "</html>");
-		    } else {
-			hintLabel.setText("");
-		    }
+		    updateHintBox();
 		}
 	    });
 	}
@@ -310,10 +326,19 @@ public class PropertiesPanel extends JPanel {
 		return null;
 	    }
 
+	    if (result != null) {
+		result.setEnabled(true);
+	    }
+	    
 	    if ((!(renderer instanceof PropertyNameCellRenderer)) && (result instanceof JComponent)) {
 		JComponent component = (JComponent) result;
 		component.setBorder(BorderFactory.createEmptyBorder(0, VALUE_CELL_LEFT_PADDING, 0,
 			0));
+		
+		PropertyRow propertyRow = getPropertyRow(row);
+		if (propertyRow.property.isReadOnly()) {
+		    component.setEnabled(false);
+		}
 	    }
 
 	    return result;
@@ -380,6 +405,12 @@ public class PropertiesPanel extends JPanel {
 	    return propertiesTableModel.propertyRows.get(row);
 	}
 
+	/**
+	 * Executes collapse/expand change of given row.
+	 * 
+	 * @param propertyRow
+	 *            records of changing row/property.
+	 */
 	private void changeCollapseOfProperty(PropertyRow propertyRow) {
 	    if (!propertyRow.composite) {
 		return;
@@ -387,6 +418,16 @@ public class PropertiesPanel extends JPanel {
 
 	    int selectedRow = getSelectedRow();
 	    propertyRow.collapsed = !propertyRow.collapsed;
+
+	    String propertyName = propertyRow.property.getName();
+	    if (propertyName != null) {
+		if (propertyRow.collapsed) {
+		    collapsedProperties.add(propertyName);
+		} else {
+		    collapsedProperties.remove(propertyName);
+		}
+	    }
+
 	    propertiesTableModel.rebuildPropertyRows();
 
 	    if (selectedRow >= 0) {
@@ -394,6 +435,37 @@ public class PropertiesPanel extends JPanel {
 	    }
 	}
 
+	/**
+	 * Updates hint box.
+	 */
+	private void updateHintBox() {
+	    int selectedRow = getSelectedRow();
+	    if (selectedRow < 0) {
+		if (model != null) {
+		    hintTitleLabel.setText(model.getLabel());
+		    hintLabel.setText("<html>" + model.getHint() + "</html>");
+		} else {
+		    hintTitleLabel.setText("");
+		    hintLabel.setText("");
+		}
+		return;
+	    }
+
+	    Property property = getPropertyRow(selectedRow).property;
+	    String hintTitle = property.getHintTitle();
+	    if (hintTitle == null) {
+		hintTitle = property.getLabel();
+	    }
+
+	    hintTitleLabel.setText(hintTitle);
+
+	    String hint = property.getHint();
+	    if (hint != null) {
+		hintLabel.setText("<html>" + property.getHint() + "</html>");
+	    } else {
+		hintLabel.setText("");
+	    }
+	}
     }
 
     // -----------------------------------------------------------------
@@ -545,7 +617,7 @@ public class PropertiesPanel extends JPanel {
 		    propertyMap.put(subproperty, row);
 
 		    if (subproperty instanceof ComposedProperty) {
-			row.collapsed = false;
+			row.collapsed = collapsedProperties.contains(subproperty.getName());
 			row.composite = (!((ComposedProperty) subproperty).getSubproperties()
 				.isEmpty());
 		    }
@@ -637,6 +709,18 @@ public class PropertiesPanel extends JPanel {
     private Color treeLineColor;
 
     /**
+     * Background color of untyped composed property that are used only as a
+     * property group.
+     */
+    private Color groupNameBackground;
+
+    /**
+     * Foreground color of untyped composed property that are used only as a
+     * property group.
+     */
+    private Color groupNameForeground;
+
+    /**
      * Level indentation in pixels (depends on icon widths)
      */
     private int indentationWidth;
@@ -655,6 +739,11 @@ public class PropertiesPanel extends JPanel {
      * Column name for property values.
      */
     private String propertyValueHeader = "Value";
+
+    /**
+     * Name set of properties that were collapsed.
+     */
+    private Set<String> collapsedProperties = new HashSet<String>();
 
     // -----------------------------------------------------------------
     // Constructor
@@ -691,13 +780,13 @@ public class PropertiesPanel extends JPanel {
 	add(hintBox, BorderLayout.SOUTH);
 	hintBox.setLayout(new BorderLayout(0, 0));
 
-	hintTitleLabel = new JLabel("Hint title");
+	hintTitleLabel = new JLabel("");
 	hintTitleLabel.setFont(hintTitleLabel.getFont().deriveFont(
 		hintTitleLabel.getFont().getStyle() | Font.BOLD));
 	hintTitleLabel.setBorder(new EmptyBorder(3, 3, 3, 3));
 	hintBox.add(hintTitleLabel, BorderLayout.NORTH);
 
-	hintLabel = new JLabel("Hint");
+	hintLabel = new JLabel("");
 	hintLabel.setBorder(new EmptyBorder(3, 5, 3, 5));
 	hintBox.add(hintLabel);
 
@@ -711,6 +800,7 @@ public class PropertiesPanel extends JPanel {
 
 	}
 
+	propertiesTable.updateHintBox();
 	setTreeUI(defaultCollapseIcon, defaultExpandIcon, getGridColor());
     }
 
@@ -738,6 +828,10 @@ public class PropertiesPanel extends JPanel {
 	    return;
 	}
 
+	if (propertiesTable.isEditing()) {
+	    propertiesTable.getCellEditor().cancelCellEditing();
+	}
+
 	if (this.model != null) {
 	    this.model.removePropertyListener(propertiesTableModel);
 	}
@@ -749,6 +843,11 @@ public class PropertiesPanel extends JPanel {
 	if (this.model != null) {
 	    this.model.addPropertyListener(propertiesTableModel);
 	}
+
+	propertiesTable.getSelectionModel().clearSelection();
+	propertiesTable.updateHintBox();
+	revalidate();
+	repaint();
     }
 
     // -----------------------------------------------------------------
@@ -915,6 +1014,64 @@ public class PropertiesPanel extends JPanel {
     public void setHeaderLabels(String nameLabel, String valueLabel) {
 	this.propertyNameHeader = nameLabel;
 	this.propertyValueHeader = valueLabel;
+	repaint();
+    }
+
+    /**
+     * Returns background color of composed properties without a type.
+     * 
+     * @return the color.
+     */
+    public Color getGroupNameBackground() {
+	return groupNameBackground;
+    }
+
+    /**
+     * Sets background color of composed properties without a type.
+     * 
+     * @param color
+     *            the desired color, or null, if a special background is not
+     *            desired.
+     */
+    public void setGroupNameBackground(Color color) {
+	if (this.groupNameBackground == color) {
+	    return;
+	}
+
+	if ((this.groupNameBackground != null) && (this.groupNameBackground.equals(color))) {
+	    return;
+	}
+
+	this.groupNameBackground = color;
+	repaint();
+    }
+
+    /**
+     * Returns foreground color of composed properties without a type.
+     * 
+     * @return the color.
+     */
+    public Color getGroupNameForeground() {
+	return groupNameForeground;
+    }
+
+    /**
+     * Sets foreground color of composed properties without a type.
+     * 
+     * @param color
+     *            the desired color, or null, if a special foreground is not
+     *            desired.
+     */
+    public void setGroupNameForeground(Color color) {
+	if (this.groupNameForeground == color) {
+	    return;
+	}
+
+	if ((this.groupNameForeground != null) && (this.groupNameForeground.equals(color))) {
+	    return;
+	}
+
+	this.groupNameForeground = color;
 	repaint();
     }
 

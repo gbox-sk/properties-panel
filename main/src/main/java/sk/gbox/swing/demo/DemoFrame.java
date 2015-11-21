@@ -2,22 +2,17 @@ package sk.gbox.swing.demo;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
 import sk.gbox.swing.propertiespanel.*;
@@ -82,6 +77,8 @@ public class DemoFrame extends JFrame {
      */
     private ComposedProperty createDemoModel() {
 	ComposedProperty container = new ComposedProperty();
+	container.setLabel("Demo properties");
+	container.setHint("Properties created using a code.");
 
 	ComposedProperty propertiesGroup = new ComposedProperty();
 	propertiesGroup.setName("properties");
@@ -95,11 +92,24 @@ public class DemoFrame extends JFrame {
 	nameProperty.setHint("Name of component.");
 	propertiesGroup.getSubproperties().add(nameProperty);
 
-	Property activeProperty = new SimpleProperty(new StringType(), "");
+	Property activeProperty = new SimpleProperty(new BooleanType(), "");
 	activeProperty.setName("enabled");
 	activeProperty.setLabel("enabled");
 	activeProperty.setHint("Indicates whether the component is enabled.");
 	propertiesGroup.getSubproperties().add(activeProperty);
+
+	Property counterProperty = new SimpleProperty(new IntegerType(0, 100, false), "");
+	counterProperty.setName("counter");
+	counterProperty.setLabel("counter");
+	counterProperty.setHint("Counts something");
+	propertiesGroup.getSubproperties().add(counterProperty);
+
+	Property enumProperty = new SimpleProperty(new EnumerationType(Arrays.asList(null,
+		"Type A", "Type B", "Type C")), null);
+	enumProperty.setName("typeEmpty");
+	enumProperty.setLabel("type");
+	enumProperty.setHint("Enumaration example with empty value.");
+	propertiesGroup.getSubproperties().add(enumProperty);
 
 	ComposedProperty advancedGroup = new ComposedProperty();
 	advancedGroup.setName("advanced");
@@ -112,6 +122,13 @@ public class DemoFrame extends JFrame {
 	hintProperty.setLabel("hint");
 	hintProperty.setHint("Hint associated with the component.");
 	advancedGroup.getSubproperties().add(hintProperty);
+
+	Property typeProperty = new SimpleProperty(new EnumerationType(Arrays.asList("Type A",
+		"Type B", "Type C")), "Type B");
+	typeProperty.setName("type");
+	typeProperty.setLabel("type");
+	typeProperty.setHint("Type of something (enumaration).");
+	advancedGroup.getSubproperties().add(typeProperty);
 
 	container.getSubproperties().add(propertiesGroup);
 	container.getSubproperties().add(advancedGroup);
@@ -145,6 +162,8 @@ public class DemoFrame extends JFrame {
 	}
 
 	XmlPropertyBuilder builder = new XmlPropertyBuilder();
+	builder.setDefaultPropertyTypeResolver(new DefaultPropertyTypeResolver());
+
 	try {
 	    Property property = builder.createProperties(doc);
 	    if (property instanceof ComposedProperty) {
@@ -154,9 +173,10 @@ public class DemoFrame extends JFrame {
 			"Xml configuration configures a simple property.", "Error",
 			JOptionPane.ERROR_MESSAGE);
 	    }
-	} catch (XmlPropertyBuilder.InvalidConfigurationException e) {
-	    JOptionPane.showMessageDialog(this, "Invalid content of xml configuration.\n" + e.getLocalizedMessage(), "Error",
-		    JOptionPane.ERROR_MESSAGE);
+	} catch (Exception e) {
+	    JOptionPane.showMessageDialog(this,
+		    "Invalid xml configuration of properties.\n" + e.getLocalizedMessage(),
+		    "Error", JOptionPane.ERROR_MESSAGE);
 	}
     }
 
@@ -205,7 +225,7 @@ public class DemoFrame extends JFrame {
 	JButton btnGridColor = new JButton("Grid color");
 	btnGridColor.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
-		Color newColor = JColorChooser.showDialog(DemoFrame.this, "Choose Grid Color",
+		Color newColor = JColorChooser.showDialog(DemoFrame.this, "Choose grid color",
 			propertiesPanel.getGridColor());
 
 		if (newColor != null) {
@@ -217,8 +237,8 @@ public class DemoFrame extends JFrame {
 	JButton btnTreeColor = new JButton("Tree color");
 	btnTreeColor.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
-		Color newColor = JColorChooser.showDialog(DemoFrame.this, "Choose Grid Color",
-			propertiesPanel.getLineColorOfTree());
+		Color newColor = JColorChooser.showDialog(DemoFrame.this,
+			"Choose color of tree lines", propertiesPanel.getLineColorOfTree());
 
 		if (newColor != null) {
 		    propertiesPanel.setLineColorOfTree(newColor);
@@ -244,6 +264,34 @@ public class DemoFrame extends JFrame {
 		setModelFromXml();
 	    }
 	});
+
+	JButton btnGroupBackground = new JButton("Background");
+	btnGroupBackground.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		Color newColor = JColorChooser.showDialog(DemoFrame.this,
+			"Choose background color of groups",
+			propertiesPanel.getGroupNameBackground());
+
+		if (newColor != null) {
+		    propertiesPanel.setGroupNameBackground(newColor);
+		}
+	    }
+	});
+
+	JButton btnGroupForeground = new JButton("Foreground");
+	btnGroupForeground.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		Color newColor = JColorChooser.showDialog(DemoFrame.this,
+			"Choose foreground color of groups",
+			propertiesPanel.getGroupNameForeground());
+
+		if (newColor != null) {
+		    propertiesPanel.setGroupNameForeground(newColor);
+		}
+	    }
+	});
+
+	JLabel lblGroup = new JLabel("Group:");
 
 	GroupLayout gl_configPanel = new GroupLayout(configPanel);
 	gl_configPanel
@@ -280,19 +328,33 @@ public class DemoFrame extends JFrame {
 													.addPreferredGap(
 														ComponentPlacement.RELATED)
 													.addComponent(
-														btnTreeColor))
-											.addGroup(
-												gl_configPanel
-													.createSequentialGroup()
-													.addComponent(
-														lblNewLabel)
-													.addPreferredGap(
-														ComponentPlacement.RELATED)
-													.addComponent(
-														indentationSpinner,
-														GroupLayout.PREFERRED_SIZE,
-														GroupLayout.DEFAULT_SIZE,
-														GroupLayout.PREFERRED_SIZE))))
+														btnTreeColor)))
+									.addGap(75))
+							.addGroup(
+								gl_configPanel
+									.createSequentialGroup()
+									.addContainerGap()
+									.addComponent(lblGroup)
+									.addPreferredGap(
+										ComponentPlacement.RELATED)
+									.addComponent(
+										btnGroupBackground)
+									.addPreferredGap(
+										ComponentPlacement.RELATED)
+									.addComponent(
+										btnGroupForeground))
+							.addGroup(
+								gl_configPanel
+									.createSequentialGroup()
+									.addContainerGap()
+									.addComponent(lblNewLabel)
+									.addPreferredGap(
+										ComponentPlacement.RELATED)
+									.addComponent(
+										indentationSpinner,
+										GroupLayout.PREFERRED_SIZE,
+										GroupLayout.DEFAULT_SIZE,
+										GroupLayout.PREFERRED_SIZE))
 							.addGroup(
 								gl_configPanel
 									.createSequentialGroup()
@@ -305,7 +367,7 @@ public class DemoFrame extends JFrame {
 									.addComponent(
 										scrollPane,
 										GroupLayout.DEFAULT_SIZE,
-										437,
+										393,
 										Short.MAX_VALUE)))
 					.addContainerGap()));
 	gl_configPanel.setVerticalGroup(gl_configPanel.createParallelGroup(Alignment.LEADING)
@@ -322,6 +384,12 @@ public class DemoFrame extends JFrame {
 					gl_configPanel.createParallelGroup(Alignment.BASELINE)
 						.addComponent(btnGridColor)
 						.addComponent(btnTreeColor))
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(
+					gl_configPanel.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblGroup)
+						.addComponent(btnGroupBackground)
+						.addComponent(btnGroupForeground))
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addGroup(
 					gl_configPanel
@@ -334,12 +402,11 @@ public class DemoFrame extends JFrame {
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(btnNewButton)
 				.addPreferredGap(ComponentPlacement.RELATED)
-				.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 294,
+				.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 265,
 					Short.MAX_VALUE).addContainerGap()));
 
 	xmlConfigurationArea = new JTextArea();
 	scrollPane.setViewportView(xmlConfigurationArea);
 	configPanel.setLayout(gl_configPanel);
     }
-
 }

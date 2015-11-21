@@ -1,6 +1,7 @@
 package sk.gbox.swing.propertiespanel;
 
 import java.util.*;
+
 import org.w3c.dom.*;
 
 /**
@@ -36,7 +37,7 @@ public class XmlPropertyBuilder {
 	 * @return the property type, or null, if the specified property type
 	 *         cannot be resolved.
 	 */
-	public PropertyType resolvePropertyType(String name, Map<String, String> parameters);
+	public PropertyType resolvePropertyType(String name, Map<String, Object> parameters);
     }
 
     /**
@@ -62,6 +63,15 @@ public class XmlPropertyBuilder {
 	if ("properties".equals(rootElement.getNodeName())) {
 	    ComposedProperty result = new ComposedProperty();
 	    processSubproperties(rootElement, result);
+
+	    if (rootElement.hasAttribute("hint")) {
+		result.setHint(rootElement.getAttribute("hint"));
+	    }
+
+	    if (rootElement.hasAttribute("label")) {
+		result.setLabel(rootElement.getAttribute("label"));
+	    }
+
 	    return result;
 	}
 
@@ -79,7 +89,7 @@ public class XmlPropertyBuilder {
     public Property createProperty(Element propertyElement) {
 	if (!"property".equals(propertyElement.getNodeName())) {
 	    throw new InvalidConfigurationException(
-		    "Element with name \"property\" expected as a parameter.");
+		    "An element with name \"property\" expected as a parameter.");
 	}
 
 	// Read property name
@@ -107,8 +117,8 @@ public class XmlPropertyBuilder {
 	// (without subproperties)
 	if ((subpropertiesElement == null) && (typeName == null)) {
 	    throw new InvalidConfigurationException(
-		    "Name of property type is missing for a simple property (name of property: \""
-			    + propertyName + "\").");
+		    "Name of property type is missing for a simple property \"" + propertyName
+			    + "\".");
 	}
 
 	// Construct property type
@@ -118,13 +128,13 @@ public class XmlPropertyBuilder {
 		propertyType = processPropertyType(typeName, typeElement);
 	    }
 	} catch (Exception e) {
-	    throw new InvalidConfigurationException("Invalid property type (name of property: \""
-		    + propertyName + "\").", e);
+	    throw new InvalidConfigurationException("Property type \"" + typeName
+		    + "\" of property \"" + propertyName + "\" could not be resolved.", e);
 	}
 
 	if ((typeName != null) && (propertyType == null)) {
-	    throw new InvalidConfigurationException(
-		    "Property type not resolvable (name of property: \"" + propertyName + "\").");
+	    throw new InvalidConfigurationException("Property type \"" + typeName
+		    + "\" of property \"" + propertyName + "\" could not be resolved.");
 	}
 
 	// Instantiate property
@@ -133,16 +143,25 @@ public class XmlPropertyBuilder {
 	    if (propertyType == null) {
 		result = new ComposedProperty();
 	    } else {
-		result = new ComposedProperty(propertyType);
+		if (!(propertyType instanceof ComposedPropertyType)) {
+		    throw new InvalidConfigurationException("Property type \"" + typeName
+			    + "\" of composed property \"" + propertyName + "\" is not composed.");
+		}
+		result = new ComposedProperty((ComposedPropertyType) propertyType);
 	    }
 	} else {
-	    result = new SimpleProperty(propertyType, propertyType.getDefaultValue());
+	    if (!(propertyType instanceof SimplePropertyType)) {
+		throw new InvalidConfigurationException("Property type \"" + typeName
+			+ "\" of composed property \"" + propertyName + "\" is not simple.");
+	    }
+	    result = new SimpleProperty((SimplePropertyType) propertyType,
+		    propertyType.getDefaultValue());
 	}
 
 	// Set property attributes
-	result.setName(propertyName);
-	result.setImportant("true".equals(propertyElement.getAttribute("important")));
-	result.setReadOnly("true".equals(propertyElement.getAttribute("readonly")));
+	result.setName(propertyName.isEmpty() ? null : propertyName);
+	result.setImportant(readBooleanAttribute(propertyElement, "important", result.isImportant()));
+	result.setReadOnly(readBooleanAttribute(propertyElement, "readonly", result.isReadOnly()));
 
 	String label = propertyElement.getAttribute("label");
 	Element labelElement = getChildElementWithName(propertyElement, "label");
@@ -156,7 +175,9 @@ public class XmlPropertyBuilder {
 	Element hintElement = getChildElementWithName(propertyElement, "hint");
 	if (hintElement != null) {
 	    hint = hintElement.getTextContent();
-	    hintTitle = hintElement.getAttribute("title");
+	    if (hintElement.hasAttribute("title")) {
+		hintTitle = hintElement.getAttribute("title");
+	    }
 	}
 	result.setHint(hint);
 	result.setHintTitle(hintTitle);
@@ -203,15 +224,21 @@ public class XmlPropertyBuilder {
      *         cannot be created or resolved.
      */
     private PropertyType processPropertyType(String typeName, Element propertyTypeElement) {
-	Map<String, String> parameters = new HashMap<String, String>();
+	Map<String, Object> parameters = new HashMap<String, Object>();
 	if (propertyTypeElement != null) {
 	    NodeList children = propertyTypeElement.getChildNodes();
 	    for (int i = 0; i < children.getLength(); i++) {
 		Node child = children.item(i);
-		if ((child instanceof Element) && "parameter".equals(child.getNodeName())) {
-		    Element parameterElement = (Element) child;
-		    parameters.put(parameterElement.getAttribute("name"),
-			    parameterElement.getAttribute("value"));
+		if (child instanceof Element) {
+		    Element childElement = (Element) child;
+		    if ("parameter".equals(childElement.getNodeName())) {
+			parameters.put(childElement.getAttribute("name"),
+				childElement.getAttribute("value"));
+		    } else if ("map".equals(childElement.getNodeName())) {
+			parameters.put(childElement.getAttribute("name"), readMap(childElement));
+		    } else if ("list".equals(childElement.getNodeName())) {
+			parameters.put(childElement.getAttribute("name"), readList(childElement));
+		    }
 		}
 	    }
 	}
@@ -228,7 +255,7 @@ public class XmlPropertyBuilder {
      *            the map with parameters of property type.
      * @return
      */
-    private PropertyType resolvePropertyType(String name, Map<String, String> parameters) {
+    private PropertyType resolvePropertyType(String name, Map<String, Object> parameters) {
 	if (defaultPropertyTypeResolver != null) {
 	    return defaultPropertyTypeResolver.resolvePropertyType(name, parameters);
 	}
@@ -245,7 +272,7 @@ public class XmlPropertyBuilder {
      *            the name of child element.
      * @return the element or null, if the specified child element is not found.
      */
-    private static Element getChildElementWithName(Element element, String name) {
+    private Element getChildElementWithName(Element element, String name) {
 	if (element == null) {
 	    return null;
 	}
@@ -259,6 +286,78 @@ public class XmlPropertyBuilder {
 	}
 
 	return null;
+    }
+
+    /**
+     * Reads element containing items of a map.
+     * 
+     * @param element
+     *            the element containing map items.
+     * @return the map with items in the document order.
+     */
+    private Map<String, String> readMap(Element element) {
+	Map<String, String> result = new LinkedHashMap<String, String>();
+	NodeList children = element.getChildNodes();
+	for (int i = 0; i < children.getLength(); i++) {
+	    Node child = children.item(i);
+	    if ((child instanceof Element) && ("item".equals(child.getNodeName()))) {
+		Element itemElement = (Element) child;
+		result.put(itemElement.getAttribute("key"), itemElement.getTextContent());
+	    }
+	}
+
+	return result;
+    }
+
+    /**
+     * Reads element containing items of a list.
+     * 
+     * @param element
+     *            the element containing list items.
+     * @return the list.
+     */
+    private List<String> readList(Element element) {
+	List<String> result = new ArrayList<String>();
+	NodeList children = element.getChildNodes();
+	for (int i = 0; i < children.getLength(); i++) {
+	    Node child = children.item(i);
+	    if ((child instanceof Element) && ("item".equals(child.getNodeName()))) {
+		Element itemElement = (Element) child;
+		result.add(itemElement.getTextContent());
+	    }
+	}
+
+	return result;
+    }
+
+    /**
+     * Reads boolean attribute (true/false value).
+     * 
+     * @param element
+     *            the element containing the attribute.
+     * @param name
+     *            the name of the attribute.
+     * @param defaultValue
+     *            the default value of the attribute, if it is not present.
+     * @return the boolean value.
+     */
+    private boolean readBooleanAttribute(Element element, String name, boolean defaultValue) {
+	if (!element.hasAttribute(name)) {
+	    return defaultValue;
+	}
+
+	String attrValue = element.getAttribute(name);
+	if ("true".equals(attrValue)) {
+	    return true;
+	}
+
+	if ("false".equals(attrValue)) {
+	    return false;
+	}
+
+	throw new InvalidConfigurationException(
+		"Only \"true\" and \"false\" are allowed for attribute (\"" + name
+			+ "\") of element \"" + element.getNodeName() + "\".");
     }
 
     /**

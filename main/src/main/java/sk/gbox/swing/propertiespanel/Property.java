@@ -60,7 +60,7 @@ public abstract class Property {
      * @param type
      *            the type of the property.
      */
-    public Property(PropertyType type) {
+    Property(PropertyType type) {
 	this.type = type;
 	this.readOnly = ((this.type == null) || ((this.type != null) && (this.type
 		.getValueEditor(null) == null)));
