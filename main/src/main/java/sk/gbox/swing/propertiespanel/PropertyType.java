@@ -82,8 +82,12 @@ public abstract class PropertyType {
      * @param message
      *            the message displayed in the window.
      */
+<<<<<<< HEAD
     public static void configureEditOrRevertTexts(String edit, String revert, String windowTitle,
 	    String message) {
+=======
+    public static void configureEditOrRevertTexts(String edit, String revert, String windowTitle, String message) {
+>>>>>>> refs/remotes/origin/master
 	editLabel = edit;
 	revertLabel = revert;
 	editOrRevertTitle = windowTitle;
