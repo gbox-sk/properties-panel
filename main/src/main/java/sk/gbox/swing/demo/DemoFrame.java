@@ -188,6 +188,13 @@ public class DemoFrame extends JFrame {
     }
 
     /**
+     * General purpose test button.
+     */
+    private void testButtonClicked() {
+	propertiesPanel.setHeaderLabels("AAA", "BBB");
+    }
+
+    /**
      * Initializes GUI components.
      */
     private void initializeComponents() {
@@ -300,117 +307,102 @@ public class DemoFrame extends JFrame {
 
 	JLabel lblGroup = new JLabel("Group:");
 
+	JButton btnTest = new JButton("Test");
+	btnTest.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		testButtonClicked();
+	    }
+	});
+
+	final JCheckBox showHeaderChB = new JCheckBox("Show header");
+	showHeaderChB.setSelected(propertiesPanel.isHeaderVisible());
+	showHeaderChB.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e0) {
+		propertiesPanel.setHeaderVisible(showHeaderChB.isSelected());
+	    }
+	});
+	showHeaderChB.setSelected(true);
+
+	final JCheckBox resizableColumnsChB = new JCheckBox("Resize by divider line");
+	resizableColumnsChB.setSelected(propertiesPanel.isResizableByDividerLine());
+	resizableColumnsChB.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		propertiesPanel.setResizableByDividerLine(resizableColumnsChB.isSelected());
+	    }
+	});
+
 	GroupLayout gl_configPanel = new GroupLayout(configPanel);
-	gl_configPanel
-		.setHorizontalGroup(gl_configPanel
-			.createParallelGroup(Alignment.LEADING)
-			.addGroup(
-				gl_configPanel
-					.createSequentialGroup()
-					.addGroup(
-						gl_configPanel
-							.createParallelGroup(Alignment.LEADING)
-							.addGroup(
-								gl_configPanel
-									.createSequentialGroup()
-									.addContainerGap()
-									.addGroup(
-										gl_configPanel
-											.createParallelGroup(
-												Alignment.LEADING)
-											.addGroup(
-												gl_configPanel
-													.createSequentialGroup()
-													.addComponent(
-														showHintBoxChB)
-													.addPreferredGap(
-														ComponentPlacement.UNRELATED)
-													.addComponent(
-														showHintTitleChB))
-											.addGroup(
-												gl_configPanel
-													.createSequentialGroup()
-													.addComponent(
-														btnGridColor)
-													.addPreferredGap(
-														ComponentPlacement.RELATED)
-													.addComponent(
-														btnTreeColor)))
-									.addGap(75))
-							.addGroup(
-								gl_configPanel
-									.createSequentialGroup()
-									.addContainerGap()
-									.addComponent(lblGroup)
-									.addPreferredGap(
-										ComponentPlacement.RELATED)
-									.addComponent(
-										btnGroupBackground)
-									.addPreferredGap(
-										ComponentPlacement.RELATED)
-									.addComponent(
-										btnGroupForeground))
-							.addGroup(
-								gl_configPanel
-									.createSequentialGroup()
-									.addContainerGap()
-									.addComponent(lblNewLabel)
-									.addPreferredGap(
-										ComponentPlacement.RELATED)
-									.addComponent(
-										indentationSpinner,
-										GroupLayout.PREFERRED_SIZE,
-										GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE))
-							.addGroup(
-								gl_configPanel
-									.createSequentialGroup()
-									.addContainerGap()
-									.addComponent(btnNewButton))
-							.addGroup(
-								gl_configPanel
-									.createSequentialGroup()
-									.addGap(12)
-									.addComponent(
-										scrollPane,
-										GroupLayout.DEFAULT_SIZE,
-										393,
-										Short.MAX_VALUE)))
-					.addContainerGap()));
-	gl_configPanel.setVerticalGroup(gl_configPanel.createParallelGroup(Alignment.LEADING)
-		.addGroup(
-			gl_configPanel
-				.createSequentialGroup()
-				.addContainerGap()
-				.addGroup(
-					gl_configPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(showHintBoxChB)
-						.addComponent(showHintTitleChB))
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(
-					gl_configPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(btnGridColor)
-						.addComponent(btnTreeColor))
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(
-					gl_configPanel.createParallelGroup(Alignment.BASELINE)
+	gl_configPanel.setHorizontalGroup(
+		gl_configPanel.createParallelGroup(Alignment.LEADING)
+			.addGroup(gl_configPanel.createSequentialGroup()
+				.addGroup(gl_configPanel.createParallelGroup(Alignment.LEADING)
+					.addGroup(gl_configPanel.createSequentialGroup()
+						.addContainerGap()
+						.addGroup(gl_configPanel.createParallelGroup(Alignment.LEADING)
+							.addGroup(gl_configPanel.createSequentialGroup()
+								.addComponent(showHintBoxChB)
+								.addPreferredGap(ComponentPlacement.UNRELATED)
+								.addComponent(showHintTitleChB)
+								.addPreferredGap(ComponentPlacement.UNRELATED)
+								.addComponent(showHeaderChB))
+							.addGroup(gl_configPanel.createSequentialGroup()
+								.addComponent(btnGridColor)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(btnTreeColor)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(btnTest))
+							.addComponent(resizableColumnsChB)))
+					.addGroup(gl_configPanel.createSequentialGroup()
+						.addContainerGap()
 						.addComponent(lblGroup)
+						.addPreferredGap(ComponentPlacement.RELATED)
 						.addComponent(btnGroupBackground)
+						.addPreferredGap(ComponentPlacement.RELATED)
 						.addComponent(btnGroupForeground))
-				.addPreferredGap(ComponentPlacement.UNRELATED)
-				.addGroup(
-					gl_configPanel
-						.createParallelGroup(Alignment.BASELINE)
+					.addGroup(gl_configPanel.createSequentialGroup()
+						.addContainerGap()
 						.addComponent(lblNewLabel)
-						.addComponent(indentationSpinner,
-							GroupLayout.PREFERRED_SIZE,
-							GroupLayout.DEFAULT_SIZE,
-							GroupLayout.PREFERRED_SIZE))
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(indentationSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGroup(gl_configPanel.createSequentialGroup()
+						.addContainerGap()
+						.addComponent(btnNewButton)))
+				.addGap(30))
+			.addGroup(gl_configPanel.createSequentialGroup()
+				.addGap(12)
+					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE)
+				.addContainerGap())
+	);
+	gl_configPanel.setVerticalGroup(
+		gl_configPanel.createParallelGroup(Alignment.LEADING)
+			.addGroup(gl_configPanel.createSequentialGroup()
+				.addContainerGap()
+				.addGroup(gl_configPanel.createParallelGroup(Alignment.BASELINE)
+					.addComponent(showHintBoxChB)
+					.addComponent(showHintTitleChB)
+					.addComponent(showHeaderChB))
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(resizableColumnsChB)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(gl_configPanel.createParallelGroup(Alignment.BASELINE)
+					.addComponent(btnGridColor)
+					.addComponent(btnTreeColor)
+					.addComponent(btnTest))
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(gl_configPanel.createParallelGroup(Alignment.BASELINE)
+					.addComponent(lblGroup)
+					.addComponent(btnGroupBackground)
+					.addComponent(btnGroupForeground))
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addGroup(gl_configPanel.createParallelGroup(Alignment.BASELINE)
+					.addComponent(lblNewLabel)
+					.addComponent(indentationSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(btnNewButton)
 				.addPreferredGap(ComponentPlacement.RELATED)
-				.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 265,
-					Short.MAX_VALUE).addContainerGap()));
+				.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+				.addContainerGap())
+	);
 
 	xmlConfigurationArea = new JTextArea();
 	scrollPane.setViewportView(xmlConfigurationArea);

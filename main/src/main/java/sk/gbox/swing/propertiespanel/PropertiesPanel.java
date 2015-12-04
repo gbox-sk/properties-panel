@@ -329,12 +329,12 @@ public class PropertiesPanel extends JPanel {
 	    if (result != null) {
 		result.setEnabled(true);
 	    }
-	    
+
 	    if ((!(renderer instanceof PropertyNameCellRenderer)) && (result instanceof JComponent)) {
 		JComponent component = (JComponent) result;
 		component.setBorder(BorderFactory.createEmptyBorder(0, VALUE_CELL_LEFT_PADDING, 0,
 			0));
-		
+
 		PropertyRow propertyRow = getPropertyRow(row);
 		if (propertyRow.property.isReadOnly()) {
 		    component.setEnabled(false);
@@ -485,17 +485,6 @@ public class PropertiesPanel extends JPanel {
 	 * Ordered list of visible property rows.
 	 */
 	private final ArrayList<PropertyRow> propertyRows = new ArrayList<PropertyRow>();
-
-	@Override
-	public String getColumnName(int columnIndex) {
-	    if (columnIndex == 0) {
-		return propertyNameHeader;
-	    } else if (columnIndex == 1) {
-		return propertyValueHeader;
-	    }
-
-	    return "";
-	}
 
 	@Override
 	public int getColumnCount() {
@@ -649,6 +638,11 @@ public class PropertiesPanel extends JPanel {
     private ComposedProperty model;
 
     /**
+     * Scroll pane.
+     */
+    private final JScrollPane scrollPane;
+
+    /**
      * Table with properties.
      */
     private final PropertiesTable propertiesTable;
@@ -657,6 +651,11 @@ public class PropertiesPanel extends JPanel {
      * Table model for properties table.
      */
     private final PropertiesTableModel propertiesTableModel;
+
+    /**
+     * Event handler that enables resize of columns without header.
+     */
+    private final TableColumnResizer columnResizer;
 
     /**
      * Cell renderer for property names.
@@ -731,16 +730,6 @@ public class PropertiesPanel extends JPanel {
     private byte indentationLevelShift = 0;
 
     /**
-     * Column name for property names.
-     */
-    private String propertyNameHeader = "Property";
-
-    /**
-     * Column name for property values.
-     */
-    private String propertyValueHeader = "Value";
-
-    /**
      * Name set of properties that were collapsed.
      */
     private Set<String> collapsedProperties = new HashSet<String>();
@@ -758,11 +747,13 @@ public class PropertiesPanel extends JPanel {
 	propertyNameCellRenderer = new PropertyNameCellRenderer();
 	emptyCellRenderer = new EmptyCellRenderer();
 
-	JScrollPane scrollPane = new JScrollPane();
+	scrollPane = new JScrollPane();
 	add(scrollPane, BorderLayout.CENTER);
 
 	propertiesTable = new PropertiesTable();
 	propertiesTableModel = new PropertiesTableModel();
+	propertiesTable.setAutoCreateColumnsFromModel(true);
+	propertiesTable.setAutoCreateRowSorter(false);
 	propertiesTable.setModel(propertiesTableModel);
 	propertiesTable.setRowSorter(null);
 	propertiesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -774,6 +765,7 @@ public class PropertiesPanel extends JPanel {
 	updateRowHeights();
 
 	scrollPane.setViewportView(propertiesTable);
+	scrollPane.setColumnHeaderView(propertiesTable.getTableHeader());
 
 	hintBox = new JPanel();
 	hintBox.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -800,8 +792,13 @@ public class PropertiesPanel extends JPanel {
 
 	}
 
+	columnResizer = new TableColumnResizer(propertiesTable);
+	setResizableByDividerLine(true);
+
 	propertiesTable.updateHintBox();
 	setTreeUI(defaultCollapseIcon, defaultExpandIcon, getGridColor());
+	setHeaderLabels("Property", "Value");
+	revalidate();
     }
 
     // -----------------------------------------------------------------
@@ -945,6 +942,8 @@ public class PropertiesPanel extends JPanel {
 
     /**
      * Returns whether hint box is visible.
+     * 
+     * @return true, if the hint box is visible, false otherwise.
      */
     public boolean isHintBoxVisible() {
 	return hintBoxVisible;
@@ -975,7 +974,7 @@ public class PropertiesPanel extends JPanel {
     /**
      * Returns whether hint title is visible in the hint box.
      * 
-     * @return
+     * @return true, if the hint title is visible, false otherwise.
      */
     public boolean isHintTitleVisible() {
 	return hintTitleVisible;
@@ -1004,6 +1003,45 @@ public class PropertiesPanel extends JPanel {
     }
 
     /**
+     * Returns whether header is visible.
+     * 
+     * @return true, if the header is visible, false otherwise.
+     */
+    public boolean isHeaderVisible() {
+	return scrollPane.getColumnHeader().isVisible();
+    }
+
+    /**
+     * Sets whether header is visible.
+     * 
+     * @param headerVisible
+     *            the desired visibility of header.
+     */
+    public void setHeaderVisible(boolean headerVisible) {
+	scrollPane.getColumnHeader().setVisible(headerVisible);
+	repaint();
+    }
+
+    /**
+     * Returns whether columns are resizable using divider line.
+     * 
+     * @return true, if columns are resizable, false otherwise.
+     */
+    public boolean isResizableByDividerLine() {
+	return columnResizer.isEnabled();
+    }
+
+    /**
+     * Sets whether columns are resizable using divider line.
+     * 
+     * @param resizableDivider
+     *            the desired resizability of divider line.
+     */
+    public void setResizableByDividerLine(boolean resizableDivider) {
+	columnResizer.setEnabled(resizableDivider);
+    }
+
+    /**
      * Sets labels of columns.
      * 
      * @param nameLabel
@@ -1012,8 +1050,9 @@ public class PropertiesPanel extends JPanel {
      *            the lable of column with property values.
      */
     public void setHeaderLabels(String nameLabel, String valueLabel) {
-	this.propertyNameHeader = nameLabel;
-	this.propertyValueHeader = valueLabel;
+	TableColumnModel tcm = propertiesTable.getColumnModel();
+	tcm.getColumn(0).setHeaderValue(nameLabel);
+	tcm.getColumn(1).setHeaderValue(valueLabel);
 	repaint();
     }
 
