@@ -294,16 +294,38 @@ public class DecimalType extends SimplePropertyType {
     }
 
     @Override
-    public boolean checkValue(Object value) {
+    public boolean isAssignableValue(Object value) {
 	if (value == null) {
 	    return nullable;
 	}
 
 	try {
-	    double doubleValue = ((Number) value).doubleValue();
+	    double doubleValue;
+	    if (value instanceof Number) {
+		doubleValue = ((Number) value).doubleValue();
+	    } else {
+		doubleValue = Double.valueOf(value.toString());
+	    }
 	    return (minValue <= doubleValue) && (doubleValue <= maxValue);
 	} catch (Exception e) {
 	    return false;
+	}
+    }
+
+    @Override
+    public Object convertAssignableToValidValue(Object value) {
+	if (value == null) {
+	    return null;
+	}
+
+	try {
+	    if (value instanceof Number) {
+		return ((Number) value).doubleValue();
+	    } else {
+		return Double.valueOf(value.toString());
+	    }
+	} catch (Exception e) {
+	    throw new RuntimeException("Invalid value");
 	}
     }
 }

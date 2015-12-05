@@ -443,7 +443,12 @@ public class PropertiesPanel extends JPanel {
 	    if (selectedRow < 0) {
 		if (model != null) {
 		    hintTitleLabel.setText(model.getLabel());
-		    hintLabel.setText("<html>" + model.getHint() + "</html>");
+		    String hint = model.getHint();
+		    if (hint != null) {
+			hintLabel.setText("<html>" + model.getHint() + "</html>");
+		    } else {
+			hintLabel.setText("");
+		    }
 		} else {
 		    hintTitleLabel.setText("");
 		    hintLabel.setText("");
@@ -564,6 +569,7 @@ public class PropertiesPanel extends JPanel {
 	    propertyRows.clear();
 
 	    if (model == null) {
+		fireTableDataChanged();
 		return;
 	    }
 

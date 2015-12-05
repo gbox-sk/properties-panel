@@ -291,16 +291,38 @@ public class IntegerType extends SimplePropertyType {
     }
 
     @Override
-    public boolean checkValue(Object value) {
+    public boolean isAssignableValue(Object value) {
 	if (value == null) {
 	    return nullable;
 	}
 
 	try {
-	    long longValue = ((Number) value).longValue();
+	    long longValue;
+	    if (value instanceof Number) {
+		longValue = ((Number) value).longValue();
+	    } else {
+		longValue = Long.valueOf(value.toString());
+	    }
 	    return (minValue <= longValue) && (longValue <= maxValue);
 	} catch (Exception e) {
 	    return false;
+	}
+    }
+
+    @Override
+    public Object convertAssignableToValidValue(Object value) {
+	if (value == null) {
+	    return null;
+	}
+
+	try {
+	    if (value instanceof Number) {
+		return ((Number) value).longValue();
+	    } else {
+		return Long.valueOf(value.toString());
+	    }
+	} catch (Exception e) {
+	    throw new RuntimeException("Invalid value");
 	}
     }
 }

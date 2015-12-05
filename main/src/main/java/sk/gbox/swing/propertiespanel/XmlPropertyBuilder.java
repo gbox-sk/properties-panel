@@ -47,8 +47,8 @@ public class XmlPropertyBuilder {
     private PropertyTypeResolver defaultPropertyTypeResolver = null;
 
     /**
-     * Creates composed property according to content of an xml document
-     * specifying properties.
+     * Creates composed or simple property according to content of an xml
+     * document specifying a property.
      * 
      * @param xmlDocument
      *            the parsed xml document.
@@ -80,7 +80,37 @@ public class XmlPropertyBuilder {
     }
 
     /**
-     * Creates a property according to an xml configuration.
+     * Creates composed property - a container for properties defined as
+     * children of given xml element. The method does not check name of the
+     * referenced container element.
+     * 
+     * @param xmlProperties
+     *            the xml element containing child elements specifying
+     *            properties.
+     * @return the composed property.
+     */
+    public ComposedProperty createProperties(Element xmlProperties) {
+	if (xmlProperties == null) {
+	    throw new NullPointerException("Container elemenent is null.");
+	}
+
+	ComposedProperty result = new ComposedProperty();
+	processSubproperties(xmlProperties, result);
+
+	if (xmlProperties.hasAttribute("hint")) {
+	    result.setHint(xmlProperties.getAttribute("hint"));
+	}
+
+	if (xmlProperties.hasAttribute("label")) {
+	    result.setLabel(xmlProperties.getAttribute("label"));
+	}
+
+	return result;
+    }
+
+    /**
+     * Creates a property according to an xml configuration. The name of element
+     * must be "property".
      * 
      * @param propertyElement
      *            the xml element with property configuration.

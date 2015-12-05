@@ -190,11 +190,37 @@ public class BooleanType extends SimplePropertyType {
     }
 
     @Override
-    public boolean checkValue(Object value) {
+    public boolean isAssignableValue(Object value) {
 	try {
-	    return (value instanceof Boolean);
+	    if (value instanceof Boolean) {
+		return true;
+	    }
+
+	    if (value instanceof String) {
+		String stringValue = value.toString();
+		return "true".equals(stringValue) || "false".equals(stringValue);
+	    }
+
+	    return false;
 	} catch (Exception e) {
 	    return false;
+	}
+    }
+
+    @Override
+    public Object convertAssignableToValidValue(Object value) {
+	try {
+	    if (value instanceof Boolean) {
+		return value;
+	    }
+
+	    if (value instanceof String) {
+		return Boolean.valueOf(value.toString());
+	    }
+
+	    throw new RuntimeException("Invalid value.");
+	} catch (Exception e) {
+	    throw new RuntimeException("Invalid value.");
 	}
     }
 }

@@ -73,7 +73,7 @@ public class StringType extends SimplePropertyType {
     }
 
     @Override
-    public boolean checkValue(Object value) {
+    public boolean isAssignableValue(Object value) {
 	return (value == null) || (value instanceof String);
     }
 }

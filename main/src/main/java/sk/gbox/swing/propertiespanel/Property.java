@@ -182,6 +182,12 @@ public abstract class Property {
     public abstract void setValue(Object value);
 
     /**
+     * Resets value of the property to default value. If the property is
+     * composed property, all subproperties are reset.
+     */
+    public abstract void resetToDefaultValue();
+
+    /**
      * Adds a listener to the list that is notified each time a change the
      * property or its descendant property occurs.
      * 

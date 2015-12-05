@@ -7,8 +7,9 @@ package sk.gbox.swing.propertiespanel;
 public interface PropertyListener {
 
     /**
-     * Notifies listener when the property or any of its descendant property
-     * changed. This does not include change of property value.
+     * Notifies listener when the property or any of its descendant properties
+     * changed. The notification includes all changes (e.g. collapse/expand,
+     * change of label, change of hint, etc.) with exception of value change.
      * 
      * @param property
      *            the property that was changed.
@@ -16,8 +17,8 @@ public interface PropertyListener {
     void propertyChanged(Property property);
 
     /**
-     * Notifies listener when the value of property or any of its descendant
-     * properties changed.
+     * Notifies listener when the value of property or value of any of its
+     * descendant properties changed.
      * 
      * @param property
      *            the property whose value was changed.
@@ -26,7 +27,7 @@ public interface PropertyListener {
 
     /**
      * Notifies listener that the list of subproperties of the composed property
-     * or any of its descendant composed property changed.
+     * or any of its descendant composed properties changed.
      * 
      * @param property
      *            the composed property that changed its list of subproperties.

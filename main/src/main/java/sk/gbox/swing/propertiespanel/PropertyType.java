@@ -41,14 +41,28 @@ public abstract class PropertyType {
     public abstract boolean isReadOnly();
 
     /**
-     * Returns whether given value is value value for the property type.
+     * Returns whether given value is assignable value for the property type.
      * 
      * @param value
      *            the value to be checked.
-     * @return true, if the value is valid for the property type, false
+     * @return true, if the value is assignable for the property type, false
      *         otherwise.
      */
-    public abstract boolean checkValue(Object value);
+    public abstract boolean isAssignableValue(Object value);
+
+    /**
+     * Converts assignable value to value that is internally valid for the
+     * property type. For instance, string value can be assignable, but
+     * internally invalid. The method is not required to check, whether the
+     * value is assignable.
+     * 
+     * @param value
+     *            the assignable value.
+     * @return the internally valid value.
+     */
+    public Object convertAssignableToValidValue(Object value) {
+	return value;
+    }
 
     /**
      * Returns default value for property type.

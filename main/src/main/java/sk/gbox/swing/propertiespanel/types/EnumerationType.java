@@ -219,7 +219,7 @@ public class EnumerationType extends SimplePropertyType {
     }
 
     @Override
-    public boolean checkValue(Object value) {
+    public boolean isAssignableValue(Object value) {
 	return searchMap.containsKey(value);
     }
 }

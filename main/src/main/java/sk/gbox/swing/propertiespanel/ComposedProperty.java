@@ -131,13 +131,14 @@ final public class ComposedProperty extends Property {
      */
     public ComposedProperty(ComposedPropertyType type, Object initialValue) {
 	super(type);
-	
+
 	if (type != null) {
-	    if (!type.checkValue(initialValue)) {
+	    if (!type.isAssignableValue(initialValue)) {
 		throw new RuntimeException("Invalid value.");
 	    }
+
+	    value = type.convertAssignableToValidValue(initialValue);
 	}
-	value = initialValue;
     }
 
     /**
@@ -177,7 +178,7 @@ final public class ComposedProperty extends Property {
     public void setValue(Object value) {
 	if (getType() == null) {
 	    if ((value == null) || !(value instanceof Map)) {
-		throw new RuntimeException("Invalid value.");
+		throw new RuntimeException("Invalid value, Map expected.");
 	    }
 	    pushValuesToSubproperties((Map) value);
 	} else {
@@ -189,14 +190,25 @@ final public class ComposedProperty extends Property {
 		return;
 	    }
 
-	    if (!getType().checkValue(value)) {
+	    if (!getType().isAssignableValue(value)) {
 		throw new RuntimeException("Invalid value.");
 	    }
 
-	    this.value = value;
+	    this.value = getType().convertAssignableToValidValue(value);
 	    pushValuesToSubproperties(((ComposedPropertyType) getType())
 		    .splitToSubvalues(this.value));
 	    firePropertyValueChanged(this);
+	}
+    }
+
+    @Override
+    public void resetToDefaultValue() {
+	if (getType() != null) {
+	    setValue(getType().getDefaultValue());
+	} else {
+	    for (Property property : subproperties) {
+		property.resetToDefaultValue();
+	    }
 	}
     }
 
@@ -208,19 +220,8 @@ final public class ComposedProperty extends Property {
      */
     private void pushValuesToSubproperties(@SuppressWarnings("rawtypes") Map values) {
 	for (Property property : subproperties) {
-	    if (property instanceof SimpleProperty) {
-		if (values.containsKey(property.getName())) {
-		    property.setValue(values);
-		}
-	    } else if (property instanceof ComposedProperty) {
-		ComposedProperty cProperty = (ComposedProperty) property;
-		if (cProperty.getType() == null) {
-		    cProperty.pushValuesToSubproperties(values);
-		} else {
-		    if (values.containsKey(cProperty.getName())) {
-			cProperty.setValue(values);
-		    }
-		}
+	    if (values.containsKey(property.getName())) {
+		property.setValue(values.get(property.getName()));
 	    }
 	}
     }

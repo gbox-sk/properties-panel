@@ -25,11 +25,11 @@ final public class SimpleProperty extends Property {
 	    throw new NullPointerException("Simple property must have a type.");
 	}
 
-	if (!type.checkValue(initialValue)) {
+	if (!type.isAssignableValue(initialValue)) {
 	    throw new RuntimeException("Invalid value.");
 	}
-	
-	value = initialValue;
+
+	value = type.convertAssignableToValidValue(initialValue);
     }
 
     @Override
@@ -47,12 +47,17 @@ final public class SimpleProperty extends Property {
 	    return;
 	}
 
-	if (!getType().checkValue(value)) {
+	if (!getType().isAssignableValue(value)) {
 	    throw new RuntimeException("Invalid value.");
 	}
 
-	this.value = value;
+	this.value = getType().convertAssignableToValidValue(value);
 	firePropertyValueChanged(this);
+    }
+
+    @Override
+    public void resetToDefaultValue() {
+	setValue(getType().getDefaultValue());
     }
 
 }
