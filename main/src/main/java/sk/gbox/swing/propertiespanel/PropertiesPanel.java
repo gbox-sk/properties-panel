@@ -808,7 +808,7 @@ public class PropertiesPanel extends JPanel {
     }
 
     // -----------------------------------------------------------------
-    // Model
+    // Model and editing
     // -----------------------------------------------------------------
 
     /**
@@ -831,9 +831,7 @@ public class PropertiesPanel extends JPanel {
 	    return;
 	}
 
-	if (propertiesTable.isEditing()) {
-	    propertiesTable.getCellEditor().cancelCellEditing();
-	}
+	cancelEditing();
 
 	if (this.model != null) {
 	    this.model.removePropertyListener(propertiesTableModel);
@@ -851,6 +849,15 @@ public class PropertiesPanel extends JPanel {
 	propertiesTable.updateHintBox();
 	revalidate();
 	repaint();
+    }
+
+    /**
+     * Cancels editing, if there is a property in the edit mode.
+     */
+    public void cancelEditing() {
+	if (propertiesTable.isEditing()) {
+	    propertiesTable.getCellEditor().cancelCellEditing();
+	}
     }
 
     // -----------------------------------------------------------------
