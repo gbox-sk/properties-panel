@@ -1,7 +1,7 @@
 package sk.gbox.swing.propertiespanel;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A property.
@@ -200,7 +200,7 @@ public abstract class Property {
 	}
 
 	if (propertyListeners == null) {
-	    propertyListeners = new ArrayList<PropertyListener>();
+	    propertyListeners = new CopyOnWriteArrayList<PropertyListener>();
 	}
 
 	propertyListeners.add(propertyListener);
