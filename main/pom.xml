@@ -1,34 +1,59 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>sk.gbox.swing</groupId>
-  <artifactId>properties-panel</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
+	<groupId>sk.gbox.swing</groupId>
+	<artifactId>properties-panel</artifactId>
+	<version>0.0.1</version>
+	<packaging>jar</packaging>
 
-  <name>properties-panel</name>
-  <url>http://maven.apache.org</url>
+	<name>properties-panel</name>
+	<url>https://github.com/gbox-sk/properties-panel</url>
+	<description>Swing component implementing a properties panel.</description>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+	<issueManagement>
+		<system>github</system>
+		<url>https://github.com/gbox-sk/properties-panel/issues</url>
+	</issueManagement>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-  
-  <licenses>
-    <license>
-      <name>Apache License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>František Galčík</name>
+			<email>frantisek.galcik@gbox.sk</email>
+			<url>http://galcik.gbox.sk</url>
+			<organization>GBOX.sk</organization>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git@github.com:gbox-sk/properties-panel.git</connection>
+		<developerConnection>scm:git:git@github.com:gbox-sk/properties-panel.git</developerConnection>
+		<url>git@github.com:gbox-sk/properties-panel.git</url>
+	</scm>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.test.skip>true</maven.test.skip>
+		<maven.test.failure.ignore>true</maven.test.failure.ignore>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
 </project>
