@@ -28,7 +28,7 @@ public class DefaultPropertyTypeResolver implements PropertyTypeResolver {
 			    parameters.get("nullable"), false));
 	case "Enumeration":
 	    if (parameters.containsKey("items") && (parameters.get("items") instanceof Map)) {
-		return new EnumerationType((Map<Object, String>) parameters.get("items"));
+		return new EnumerationType<Object>((Map<Object, String>) parameters.get("items"));
 	    } else {
 		return null;
 	    }

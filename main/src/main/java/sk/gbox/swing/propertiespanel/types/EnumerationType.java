@@ -18,7 +18,7 @@ import sk.gbox.swing.propertiespanel.*;
  * Property type with enumerated values.
  */
 @SuppressWarnings("serial")
-public class EnumerationType extends SimplePropertyType {
+public class EnumerationType<T> extends SimplePropertyType {
 
     /**
      * Item of enumeration.
@@ -125,20 +125,21 @@ public class EnumerationType extends SimplePropertyType {
      * Constructs enumeration type.
      * 
      * @param items
-     *            the list of items.
+     *            the map mapping keys to labels.
      */
-    public EnumerationType(List<Object> items) {
-	this(items, null);
+    public EnumerationType(Map<T, String> items) {
+	this(new ArrayList<T>(items.keySet()), items);
     }
 
     /**
-     * Constructs enumeration type.
+     * Constructs enumeration type. Labels of items are determined by their
+     * String representations.
      * 
      * @param items
-     *            the map mapping keys to labels.
+     *            the list of items.
      */
-    public EnumerationType(Map<Object, String> items) {
-	this(new ArrayList<Object>(items.keySet()), items);
+    public EnumerationType(List<T> items) {
+	this(items, null);
     }
 
     /**
@@ -149,7 +150,7 @@ public class EnumerationType extends SimplePropertyType {
      * @param itemLabels
      *            the map mapping labels to items.
      */
-    public EnumerationType(List<Object> items, Map<Object, String> itemLabels) {
+    public EnumerationType(List<T> items, Map<T, String> itemLabels) {
 	if (items.isEmpty()) {
 	    throw new RuntimeException("Empty enumeration is not allowed.");
 	}
