@@ -143,6 +143,9 @@ final public class ComposedProperty extends Property {
 
     /**
      * Constructs untyped composed property.
+     * 
+     * @param type
+     *            the type of property.
      */
     public ComposedProperty(ComposedPropertyType type) {
 	this(type, (type != null) ? type.getDefaultValue() : null);
@@ -157,6 +160,8 @@ final public class ComposedProperty extends Property {
 
     /**
      * Returns list of subproperties that compose this property.
+     * 
+     * @return the list of subproperties.
      */
     public PropertyList getSubproperties() {
 	return subproperties;

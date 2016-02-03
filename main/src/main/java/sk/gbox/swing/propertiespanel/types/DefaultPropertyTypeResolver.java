@@ -44,6 +44,7 @@ public class DefaultPropertyTypeResolver implements PropertyTypeResolver {
      *            the parameter.
      * @param defaultValue
      *            the default value.
+     * @return the value.
      */
     protected long readLong(Object parameter, long defaultValue) {
 	try {
@@ -60,6 +61,7 @@ public class DefaultPropertyTypeResolver implements PropertyTypeResolver {
      *            the parameter.
      * @param defaultValue
      *            the default value.
+     * @return the value.
      */
     protected double readDouble(Object parameter, double defaultValue) {
 	try {
@@ -76,6 +78,7 @@ public class DefaultPropertyTypeResolver implements PropertyTypeResolver {
      *            the parameter.
      * @param defaultValue
      *            the default value.
+     * @return the value.
      */
     protected boolean readBoolean(Object parameter, boolean defaultValue) {
 	try {

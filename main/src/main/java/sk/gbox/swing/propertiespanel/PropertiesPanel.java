@@ -913,6 +913,8 @@ public class PropertiesPanel extends JPanel {
 
     /**
      * Returns indentation level shift for simple simple subproperties.
+     * 
+     * @return the indentation level shift.
      */
     public int getIndentationLevelShift() {
 	return indentationLevelShift;

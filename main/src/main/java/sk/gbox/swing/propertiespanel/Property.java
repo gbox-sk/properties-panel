@@ -97,6 +97,9 @@ public abstract class Property {
 
     /**
      * Returns the composed property to which the property belongs.
+     * 
+     * @return the parent (composed) property or null, if the property does not
+     *         have a parent.
      */
     public ComposedProperty getParent() {
 	return parent;
@@ -170,6 +173,8 @@ public abstract class Property {
 
     /**
      * Returns the current value of the property.
+     * 
+     * @return the value
      */
     public abstract Object getValue();
 
